@@ -1,0 +1,366 @@
+getgenv().Config = {}
+local player = game.Players.LocalPlayer
+local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
+local Window = OrionLib:MakeWindow({Name = "Lumber Legends", HidePremium = false, SaveConfig = false, ConfigFolder = "OrionTest"})
+local Tab = Window:MakeTab({
+	Name = "Main",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
+local Egg = Window:MakeTab({
+	Name = "Egg",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
+local Dungeon = Window:MakeTab({
+	Name = "Dungeon",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
+local Misc = Window:MakeTab({
+	Name = "Misc",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
+Misc:AddButton({
+	Name = "AntiAFK",
+	Callback = function()
+      	antiAFK()
+  	end    
+})
+
+local treeTable = {}
+local dupeTrees = {}
+
+for _, v in pairs(workspace["[Codable]"]["[Tree Spawners]"]:GetDescendants()) do
+    if v:IsA("Model") and not dupeTrees[v.Name] then
+        table.insert(treeTable, v.Name)
+        dupeTrees[v.Name] = true
+    end
+end
+
+local treeDropdown = {"None"}
+
+for _,v in pairs(treeTable) do
+    table.insert(treeDropdown, v)
+end
+
+local function refreshTree(Tree)
+local treeTable = {}
+local dupeTrees = {}
+
+for _, v in pairs(workspace["[Codable]"]["[Tree Spawners]"]:GetDescendants()) do
+    if v:IsA("Model") and not dupeTrees[v.Name] then
+        table.insert(treeTable, v.Name)
+        dupeTrees[v.Name] = true
+    end
+end
+
+local treeDropdown = {"None"}
+
+for _,v in pairs(treeTable) do
+    table.insert(treeDropdown, v)
+end
+Tree:Refresh(treeDropdown,true)
+end
+
+local Tree = Tab:AddDropdown({
+	Name = "Trees",
+	Default = "None",
+	Options = treeDropdown,
+	Callback = function(tree)
+		selectedTree = tree
+	end    
+})
+
+Tab:AddButton({
+	Name = "Refresh Dropdown",
+	Callback = function()
+      	refreshTree(Tree)
+  	end    
+})
+
+Tab:AddToggle({
+	Name = "Auto Tree",
+	Default = false,
+	Callback = function(v)
+		Config.autoTree = v
+        spawn(autoTree)
+	end    
+})
+
+Tab:AddToggle({
+	Name = "Coin Magnet",
+	Default = false,
+	Callback = function(v)
+		Config.autoCollect = v
+        spawn(autoCollect)
+	end    
+})
+
+Tab:AddToggle({
+	Name = "Tree Aura",
+	Default = false,
+	Callback = function(v)
+		Config.treeAura = v
+        spawn(treeAura)
+	end    
+})
+
+Dungeon:AddToggle({
+	Name = "Auto Easy Dungeon (Join one First)",
+	Default = false,
+	Callback = function(v)
+		Config.autoDungeon = v
+        spawn(autoDungeon)
+        spawn(dungeonDoor)
+	end    
+})
+
+Dungeon:AddButton({
+	Name = "TP Easy Dungeon Door",
+	Callback = function()
+      	tpEasy()
+  	end    
+})
+
+
+local Section = Tab:AddSection({
+	Name = "Other"
+})
+
+Tab:AddToggle({
+	Name = "Auto Craft Axes",
+	Default = false,
+	Callback = function(v)
+		Config.autoCraft = v
+        spawn(autoCraft)
+	end    
+})
+
+Tab:AddToggle({
+	Name = "Auto Level Up",
+	Default = false,
+	Callback = function(v)
+		Config.autoLevel = v
+        spawn(autoLevel)
+	end    
+})
+
+Tab:AddToggle({
+	Name = "Auto Claim Gifts",
+	Default = false,
+	Callback = function(v)
+		Config.autoClaim = v
+        spawn(autoClaim)
+	end    
+})
+
+Tab:AddToggle({
+	Name = "Auto Spin",
+	Default = false,
+	Callback = function(v)
+		Config.autoSpin = v
+        spawn(autoSpin)
+	end    
+})
+
+local eggList = {}
+
+for _, v in pairs(workspace["[Codable]"]["[Eggs]"]:GetChildren()) do
+    if v:IsA("Model") then
+        table.insert(eggList, v.Name)
+    end
+end
+
+local eggDropdown = {"None"}
+
+for _, v in pairs(eggList) do
+    table.insert(eggDropdown, v)
+end
+
+Egg:AddDropdown({
+	Name = "Eggs",
+	Default = "None",
+	Options = eggDropdown,
+	Callback = function(egg)
+		selectedEgg = egg
+	end    
+})
+
+Egg:AddDropdown({
+	Name = "Egg Amount (Free)",
+	Default = 1,
+	Options = {1,2,3},
+	Callback = function(amount)
+		chosenAmount = amount
+	end    
+})
+
+Egg:AddToggle({
+	Name = "Auto Egg",
+	Default = false,
+	Callback = function(v)
+		Config.autoEgg = v
+        spawn(autoEgg)
+	end    
+})
+
+OrionLib:Init()
+
+function bypassVoid()
+    local void = workspace["[Codable]"]["[WaterTeleports]"]
+    void:Destroy()
+end
+
+function autoTree()
+    local lastTarget = nil
+
+    while task.wait() and Config.autoTree do
+        local treeFound = false
+        
+        for _, v in pairs(workspace["[Codable]"]["[Tree Spawners]"]:GetDescendants()) do
+            if (not lastTarget or not lastTarget.Parent) and v:IsA("Model") and v.Name == selectedTree then
+                lastTarget = v
+                treeFound = true
+                break
+            elseif lastTarget == v then
+                treeFound = true
+                break
+            end
+        end
+        
+        if treeFound and lastTarget then
+            player.Character.PrimaryPart.CFrame = CFrame.new(lastTarget.PrimaryPart.Position + Vector3.new(0,3,5))
+            --game:GetService("TweenService"):Create(game.Players.LocalPlayer.Character:WaitForChild('HumanoidRootPart'), TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {CFrame = CFrame.new(lastTarget.PrimaryPart.Position + Vector3.new(0,0.9,0))}):Play()
+            local Tree = lastTarget.Parent.Name
+            game:GetService("ReplicatedStorage"):WaitForChild("Resources"):WaitForChild("Packages"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("AxeService"):WaitForChild("RE"):WaitForChild("HitTree"):FireServer(Tree)
+        end
+    end
+end
+
+function autoCollect()
+    while task.wait() and Config.autoCollect do
+        for _, v in pairs(workspace["[Codable]"]["[Orbs]"]:GetChildren()) do
+            if v:IsA("Part") then
+                v.CFrame = player.Character.PrimaryPart.CFrame
+            end
+        end    
+    end
+end
+
+function antiAFK()
+    local vu = game:GetService("VirtualUser")
+    game:GetService("Players").LocalPlayer.Idled:connect(function()
+       vu:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+       wait(1)
+       vu:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+    end)
+end
+
+function autoEgg()
+        while task.wait() and Config.autoEgg do
+        game:GetService("ReplicatedStorage"):WaitForChild("Resources"):WaitForChild("Packages"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("EggService"):WaitForChild("RE"):WaitForChild("BuyEgg"):FireServer(chosenAmount, selectedEgg)            
+    end
+end
+
+function treeAura()
+    while task.wait() and Config.treeAura do
+        local nearestTree = nil
+        local shortestDistance = math.huge
+
+        for _, v in pairs(workspace["[Codable]"]["[Tree Spawners]"]:GetDescendants()) do
+            if v:IsA("Model") and v.PrimaryPart and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                local distance = (v.PrimaryPart.Position - player.Character.HumanoidRootPart.Position).Magnitude
+
+                if distance < shortestDistance then
+                    shortestDistance = distance
+                    nearestTree = v
+                end
+            end
+        end
+
+        if nearestTree then
+            local Tree = nearestTree.Parent.Name
+            game:GetService("ReplicatedStorage"):WaitForChild("Resources"):WaitForChild("Packages"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("AxeService"):WaitForChild("RE"):WaitForChild("HitTree"):FireServer(Tree)
+        end
+    end
+end
+
+function autoCraft()
+    while task.wait(0.1) and Config.autoCraft do
+        for _,v in pairs(game:GetService("Players").LocalPlayer.PlayerGui.CoreUI.Frames.Axes.Main.Container:GetDescendants()) do
+            if v:IsA("Frame") and v.Name ~= "Template" then
+                game:GetService("ReplicatedStorage"):WaitForChild("Resources"):WaitForChild("Packages"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("AxeInventoryService"):WaitForChild("RF"):WaitForChild("CraftAxe"):InvokeServer(v.Name)
+            end
+        end
+    end
+end
+
+function autoLevel()
+        while task.wait(0.5) and Config.autoLevel do
+            game:GetService("ReplicatedStorage"):WaitForChild("Resources"):WaitForChild("Packages"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("LevelService"):WaitForChild("RE"):WaitForChild("LevelUp"):FireServer()
+    end
+end
+
+function autoClaim()
+    while task.wait(0.5) and Config.autoClaim do
+        for i = 1,12 do
+            local args = {
+                [1] = i
+            }
+                
+            game:GetService("ReplicatedStorage"):WaitForChild("Resources"):WaitForChild("Packages"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("GiftsService"):WaitForChild("RE"):WaitForChild("Claim"):FireServer(unpack(args))
+        end
+    end
+end
+
+function autoSpin()
+    while task.wait(0.5) and Config.autoSpin do
+        game:GetService("ReplicatedStorage"):WaitForChild("Resources"):WaitForChild("Packages"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("SpinWheelService"):WaitForChild("RF"):WaitForChild("Spin"):InvokeServer()
+    end
+end
+
+function autoDungeon()
+    local lastTarget = nil
+    while task.wait() and Config.autoDungeon do
+        local mobFound = false
+        for _, v in pairs(workspace["[Codable]"]["[Dungeon]"].Rooms.Easy:GetDescendants()) do
+            if (not lastTarget or not lastTarget.Parent) and v:IsA("Model") and v.Parent:IsA("Part") and v.Parent.Parent.Name == "Spawners" then
+                lastTarget = v
+                mobFound = true
+                break
+            elseif lastTarget == v then
+                mobFound = true
+                break
+            end
+        end
+    
+        if mobFound and lastTarget then
+            game.Players.LocalPlayer.Character:PivotTo(lastTarget:GetPivot() + Vector3.new(0,3,5))
+            game:GetService("ReplicatedStorage"):WaitForChild("Resources"):WaitForChild("Packages"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("MobsService"):WaitForChild("RE"):WaitForChild("HitMob"):FireServer(lastTarget.Parent.Name)
+        end
+    end
+end
+
+function dungeonDoor()
+while task.wait() and Config.autoDungeon do
+    if Config.autoDungeon then
+        game:GetService("ReplicatedStorage"):WaitForChild("Resources"):WaitForChild("Packages"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("DungeonService"):WaitForChild("RE"):WaitForChild("Save"):FireServer()
+        else
+            break
+        end
+    end
+end
+
+function tpEasy()
+    local path = workspace["[Codable]"]["[Dungeon]"].Lobby.Builds:GetChildren()[46]:GetChildren()[2].Model.Part
+
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = path.CFrame + Vector3.new(20,0,-6.5)
+end
+
+bypassVoid()
