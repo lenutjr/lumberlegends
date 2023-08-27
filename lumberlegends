@@ -410,8 +410,8 @@ function autoGroupChest()
     end
 end
 
+bypassVoid()
+
 while task.wait() do
     easyUpdate()
 end
-
-bypassVoid()
