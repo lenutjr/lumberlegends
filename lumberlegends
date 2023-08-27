@@ -111,6 +111,15 @@ Tab:AddToggle({
 	end    
 })
 
+local EasyTimer = workspace["[Codable]"]["[Dungeon]"].Lobby.Timers.Easy.Timer.Timer.Text
+
+local easyDungeonLabel = Dungeon:AddParagraph("Easy Dungeon Timer", EasyTimer)
+
+function easyUpdate()
+    local currentTimer = workspace["[Codable]"]["[Dungeon]"].Lobby.Timers.Easy.Timer.Timer.Text
+    easyDungeonLabel:Set(currentTimer)
+end
+
 Dungeon:AddToggle({
 	Name = "Auto Easy Dungeon (Join one First)",
 	Default = false,
@@ -166,6 +175,24 @@ Tab:AddToggle({
 	Callback = function(v)
 		Config.autoSpin = v
         spawn(autoSpin)
+	end    
+})
+
+Tab:AddToggle({
+	Name = "Auto Claim Chest",
+	Default = false,
+	Callback = function(v)
+		Config.autoChest = v
+        spawn(autoChest)
+	end    
+})
+
+Tab:AddToggle({
+	Name = "Auto Claim Group Chest",
+	Default = false,
+	Callback = function(v)
+		Config.autoGroupChest = v
+        spawn(autoGroupChest)
 	end    
 })
 
@@ -358,9 +385,23 @@ while task.wait() and Config.autoDungeon do
 end
 
 function tpEasy()
-    local path = workspace["[Codable]"]["[Dungeon]"].Lobby.Builds:GetChildren()[46]:GetChildren()[2].Model.Part
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-1575.76233, 13.6174316, 2850.3728, 0.310693085, -0.950510263, -4.3541193e-05, 4.3541193e-05, 6.00814819e-05, -1, 0.950510263, 0.310693055, 6.00814819e-05) + Vector3.new(0,10,0)
+end
 
-    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = path.CFrame + Vector3.new(20,0,-6.5)
+function autoChest()
+    while task.wait() and Config.autoChest do
+        game:GetService("ReplicatedStorage"):WaitForChild("Resources"):WaitForChild("Packages"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("ChestRewardService"):WaitForChild("RE"):WaitForChild("Claim"):FireServer("LobbyReward")
+    end
+end
+
+function autoGroupChest()
+    while task.wait() and Config.autoGroupChest do
+        game:GetService("ReplicatedStorage"):WaitForChild("Resources"):WaitForChild("Packages"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("ChestRewardService"):WaitForChild("RE"):WaitForChild("Claim"):FireServer("LobbyReward2")
+    end
+end
+
+while task.wait() do
+    easyUpdate()
 end
 
 bypassVoid()
