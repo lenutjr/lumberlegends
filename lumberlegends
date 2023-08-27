@@ -1,3 +1,11 @@
+local oldCFrame
+oldCFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-1575.76233, 13.6174316, 2850.3728, 0.310693085, -0.950510263, -4.3541193e-05, 4.3541193e-05, 6.00814819e-05, -1, 0.950510263, 0.310693055, 6.00814819e-05) + Vector3.new(0,10,0)
+task.wait(1)
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = oldCFrame
+
+task.wait(1)
+
 getgenv().Config = {}
 local player = game.Players.LocalPlayer
 local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
